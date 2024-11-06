@@ -33,7 +33,7 @@ namespace CommentsAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel registerRequest)
+        public async Task<IActionResult> Register([FromForm] RegisterModel registerRequest)
         {
             // Call the RegisterUserAsync method
             var result = await _authenticationService.RegisterUserAsync(registerRequest.UserName, registerRequest.Password);
