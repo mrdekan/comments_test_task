@@ -1,15 +1,14 @@
-// store.js
 import { configureStore } from '@reduxjs/toolkit';
-import { authApi } from '../API/auth.ts';
+import { commentsApi } from '../API/comments.ts';
 import rootReducer from './Reducers/rootReducer.ts';
 
 const store = configureStore({
   reducer: {
     ...rootReducer,
-    [authApi.reducerPath]: authApi.reducer,
+    [commentsApi.reducerPath]: commentsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware),
+    getDefaultMiddleware().concat(commentsApi.middleware),
 });
 
 export default store;

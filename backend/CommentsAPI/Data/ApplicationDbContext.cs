@@ -1,10 +1,9 @@
 ﻿using CommentsAPI.Models.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommentsAPI.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<UserEntity>
+    public class ApplicationDbContext : DbContext
     {
         public DbSet<CommentEntity> Comments { get; set; }
 
@@ -16,11 +15,6 @@ namespace CommentsAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<CommentEntity>()
-                .HasOne(c => c.User)
-                .WithMany(u => u.Comments)
-                .HasForeignKey(c => c.UserId);
 
             modelBuilder.Entity<CommentEntity>()
                 .HasOne(c => c.Parent)
