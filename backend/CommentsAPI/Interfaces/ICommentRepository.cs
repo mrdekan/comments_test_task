@@ -10,5 +10,6 @@ namespace CommentsAPI.Interfaces
         Task AddAsync(CommentEntity comment);
         Task UpdateAsync(CommentEntity comment);
         Task DeleteAsync(CommentEntity comment);
+        Task<IEnumerable<CommentEntity>> GetChildrenAsync(int parentId);
     }
 }

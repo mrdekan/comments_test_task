@@ -21,7 +21,13 @@ export const commentsApi = createApi({
         method: 'GET',
       }),
     }),
+    getChildren: builder.query<GetCommentsResponse,number>({
+      query: (id) => ({
+        url: '/comments/children/'+id,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
-export const { usePostCommentMutation, useGetTopLayerCommentsQuery } = commentsApi;
+export const { usePostCommentMutation, useGetTopLayerCommentsQuery, useLazyGetChildrenQuery } = commentsApi;

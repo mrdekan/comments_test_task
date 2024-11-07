@@ -26,6 +26,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+builder.Services.AddSingleton<IValidationService, ValidationService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -53,7 +55,7 @@ app.UseWebSockets();
 
 app.UseCors("AllowReactApp");
 
-
+app.UseStaticFiles();
 //app.UseHttpsRedirection();
 
 app.UseAuthorization();

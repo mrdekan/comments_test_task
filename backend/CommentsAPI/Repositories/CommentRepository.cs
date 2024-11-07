@@ -44,12 +44,18 @@ namespace CommentsAPI.Repositories
 
         public async Task<IEnumerable<CommentEntity>> GetTopLayerComments(int count, int offset)
         {
-            return await _context.Comments.Where(el => el.ParentId == null).ToListAsync();
+            return await _context.Comments
+                .Where(el => el.ParentId == null)
+                .Include(c => c.Comments)
+                .ToListAsync();
         }
 
-        //public async Task<int> CountChildren(CommentEntity comment)
-        //{
-
-        //}
+        public async Task<IEnumerable<CommentEntity>> GetChildrenAsync(int parentId)
+        {
+            return await _context.Comments
+                .Where(c => c.ParentId == parentId)
+                .Include(c => c.Comments)
+                .ToListAsync();
+        }
     }
 }

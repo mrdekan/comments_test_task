@@ -1,8 +1,26 @@
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
+import CommentsList from "./CommentsList/CommentsList.tsx";
+import cl from "./Comment.module.css";
 interface CommentProps {
 	comment: Comment;
+	comments: { [key: string]: Comment[] };
+	handleResponse: (id: number) => void;
+	setOpenCommentStatus: (
+		id: number,
+		status: boolean,
+		count: number
+	) => Promise<void>;
+	getCommentsByParentId: (parentId: number | null) => Comment[];
 }
-const Comment: FC<CommentProps> = ({ comment }) => {
+const Comment: FC<CommentProps> = ({
+	comment,
+	handleResponse,
+	setOpenCommentStatus,
+	getCommentsByParentId,
+	comments,
+}) => {
+	const PHOTO_URL = process.env.REACT_APP_PHOTO_URL;
+	const [open, setOpen] = useState<boolean>(false);
 	function formatDate(dateString) {
 		const date = new Date(dateString);
 
@@ -14,21 +32,17 @@ const Comment: FC<CommentProps> = ({ comment }) => {
 
 		return `${day}.${month}.${year} в ${hours}:${minutes}`;
 	}
+	function handleOpen() {
+		setOpenCommentStatus(comment.id, !open, comment.childrenCount);
+		setOpen(!open);
+	}
+	console.log(comment.fileURL);
 	return (
-		<div style={{ width: "90%" }}>
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "10px",
-					backgroundColor: "lightblue",
-					padding: "10px",
-				}}
-			>
-				<div>
-					<p>{comment.author.username}</p>
-					<p>{comment.author.email}</p>
-				</div>
+		<div className={cl.comment}>
+			<div className={cl.commentHeader}>
+				<p style={{ fontWeight: "bold", fontSize: "18px" }}>
+					{comment.author.username}
+				</p>
 				<div
 					style={{
 						display: "flex",
@@ -37,13 +51,50 @@ const Comment: FC<CommentProps> = ({ comment }) => {
 					}}
 				>
 					<p>{formatDate(comment.createdAt)}</p>
-					<p>{comment.childrenCount}</p>
+					<p>{comment.childrenCount} replies</p>
 				</div>
 			</div>
-			<div style={{ padding: "10px" }}>
-				<p>{comment.content}</p>
-				<p>{comment.id}</p>
+			<div className={cl.commentBody}>
+				<div style={{ display: "flex" }}>
+					<div style={{ width: "100%" }}>
+						<p
+							style={{ fontSize: "16px" }}
+							dangerouslySetInnerHTML={{ __html: comment.content }}
+						/>
+						<p style={{ marginTop: "10px" }}>{comment.author.email}</p>
+					</div>
+					{comment.fileURL && (
+						<div>
+							<img
+								src={PHOTO_URL + comment.fileURL}
+								style={{ maxWidth: "100px", maxHeight: "100px" }}
+								alt={comment.fileURL}
+							/>
+						</div>
+					)}
+				</div>
+				<div className={cl.buttons}>
+					{comment.childrenCount > 0 ? (
+						<button onClick={() => handleOpen()}>
+							{!open
+								? `View replies (${comment.childrenCount})`
+								: `Hide replies`}
+						</button>
+					) : (
+						<div></div>
+					)}
+					<button onClick={() => handleResponse(comment.id)}>Reply</button>
+				</div>
 			</div>
+			{open && comment.childrenCount > 0 && (
+				<CommentsList
+					comments={comments}
+					setOpenCommentStatus={setOpenCommentStatus}
+					handleResponse={handleResponse}
+					id={comment.id}
+					getCommentsByParentId={getCommentsByParentId}
+				/>
+			)}
 		</div>
 	);
 };

@@ -1,4 +1,5 @@
 ﻿using CommentsAPI.Interfaces;
+using ImageMagick;
 
 namespace CommentsAPI.Services
 {
@@ -25,7 +26,36 @@ namespace CommentsAPI.Services
             {
                 await file.CopyToAsync(stream);
             }
+            if (new string[] { "jpg", "png", "gif" }.Contains(Path.GetExtension(file.FileName).ToLower().Replace(".", "")))
+            {
+                ProcessImage(240, 320, fileName);
+            }
             return fileName;
         }
+        public void ProcessImage(int maxWidth, int maxHeight, string filename)
+        {
+            filename = Path.Combine(_baseDirectory, filename);
+            MagickImage img = new(filename);
+
+            if (img.Width > maxWidth || img.Height > maxHeight)
+            {
+                decimal ratio = img.Width / img.Height;
+                decimal newRatio = maxWidth / maxHeight;
+                if (ratio > 1 && newRatio < 1 || ratio < 1 && newRatio > 1)
+                    (maxWidth, maxHeight) = (maxHeight, maxWidth);
+                decimal widthRatio = (decimal)maxWidth / img.Width;
+                decimal heightRatio = (decimal)maxHeight / img.Height;
+
+                decimal scaleRatio = Math.Min(widthRatio, heightRatio);
+
+                int newWidth = (int)Math.Round(img.Width * scaleRatio);
+                int newHeight = (int)Math.Round(img.Height * scaleRatio);
+
+                img.Resize((uint)newWidth, (uint)newHeight);
+            }
+
+            img.Write(filename);
+        }
+
     }
 }

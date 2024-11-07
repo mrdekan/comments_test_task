@@ -15,22 +15,39 @@ namespace CommentsAPI.Controllers
         private static readonly List<WebSocket> _clients = new();
         private readonly ICommentRepository _commentRepository;
         private readonly IFileService _fileService;
-        public CommentsController(ICommentRepository commentRepository, IFileService fileService)
+        private readonly IWebSocketService _webSocketService;
+        private readonly IValidationService _validationService;
+        public CommentsController(ICommentRepository commentRepository, IFileService fileService, IWebSocketService webSocketService, IValidationService validationService)
         {
             _commentRepository = commentRepository;
             _fileService = fileService;
+            _webSocketService = webSocketService;
+            _validationService = validationService;
         }
 
         [HttpGet("ws")]
         public async Task WebSocketHandler()
         {
-            Console.WriteLine("WebSocket request received");
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                using (var socket = await HttpContext.WebSockets.AcceptWebSocketAsync())
+                var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                _webSocketService.AddClient(socket);
+
+                try
                 {
-                    _clients.Add(socket);
-                    await ReceiveMessage(socket);
+                    var buffer = new byte[1024 * 4];
+                    while (socket.State == WebSocketState.Open)
+                    {
+                        var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            await _webSocketService.RemoveClientAsync(socket);
+                        }
+                    }
+                }
+                catch (WebSocketException ex)
+                {
+                    Console.WriteLine($"WebSocket error: {ex.Message}");
                 }
             }
             else
@@ -39,57 +56,17 @@ namespace CommentsAPI.Controllers
             }
         }
 
-        private async Task ReceiveMessage(WebSocket socket)
-        {
-            var buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result;
-
-            try
-            {
-                do
-                {
-                    result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                    if (result.MessageType == WebSocketMessageType.Text)
-                    {
-                        var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                        await BroadcastMessage(message);
-                    }
-                } while (!result.CloseStatus.HasValue);
-
-                _clients.Remove(socket);
-                await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during WebSocket communication: {ex.Message}");
-            }
-            finally
-            {
-                if (socket.State != WebSocketState.Closed)
-                {
-                    await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Internal error", CancellationToken.None);
-                }
-            }
-        }
-
-
-        private async Task BroadcastMessage(string message)
-        {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            foreach (var client in _clients)
-            {
-                if (client.State == WebSocketState.Open)
-                {
-                    await client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
-                }
-            }
-        }
-
-
         [HttpGet]
         public async Task<IActionResult> GetTopLayerComments()
         {
             var comments = await _commentRepository.GetTopLayerComments(25, 0);
+            return Ok(new { Comments = comments.Select(el => new CommentResponse(el)) });
+        }
+
+        [HttpGet("children/{id}")]
+        public async Task<IActionResult> GetChildren(int id)
+        {
+            var comments = await _commentRepository.GetChildrenAsync(id);
             return Ok(new { Comments = comments.Select(el => new CommentResponse(el)) });
         }
 
@@ -100,6 +77,10 @@ namespace CommentsAPI.Controllers
             if (captchaText == null || !captchaText.Equals(request.CaptchaText, StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest("Invalid captcha");
+            }
+            if (!_validationService.IsValidHtml(request.Content))
+            {
+                return BadRequest("Invalid content (only <a><strong><i><code> are allowed)");
             }
 
             string? fileName = null;
@@ -112,26 +93,10 @@ namespace CommentsAPI.Controllers
 
             var response = new CommentResponse(comment);
 
-            await BroadcastMessage(response);
+            var responseJson = JsonConvert.SerializeObject(response);
+            _webSocketService.QueueMessage(responseJson);
 
             return Ok(response);
-        }
-        private async Task BroadcastMessage(CommentResponse message)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffK"
-            };
-            var messageJson = JsonConvert.SerializeObject(message, settings);
-            var buffer = Encoding.UTF8.GetBytes(messageJson);
-
-            foreach (var client in _clients)
-            {
-                if (client.State == WebSocketState.Open)
-                {
-                    await client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
-                }
-            }
         }
     }
 }

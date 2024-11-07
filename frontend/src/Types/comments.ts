@@ -2,7 +2,7 @@ export interface Comment {
     id: number;
     childrenCount: number;
     content: string;
-    fileUrl: string|null;
+    fileURL: string|null;
     parentId: number|null;
     createdAt: string;
     author: {

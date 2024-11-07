@@ -19,28 +19,31 @@ const CommentForm: React.FC<CommentFormProps> = ({ setModal, parentId }) => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
-		// Формуємо FormData
 		const formData = new FormData();
 		formData.append("content", content);
 		formData.append("username", username);
 		formData.append("email", email);
+		if (parentId !== null) formData.append("parentId", parentId);
 		if (homepage) formData.append("homepage", homepage);
 		if (file) formData.append("file", file);
 		formData.append("captchaText", captchaText);
 
 		try {
-			// Викликаємо RTK Query для відправки коментаря
 			const response = await postComment(formData).unwrap();
 			console.log("Comment posted:", response);
+			setModal(false);
 		} catch (err) {
 			console.error("Failed to post comment:", error);
 		}
 	};
 
 	return (
-		<div className={cl.modalBackground}>
-			{/* onMouseDown={() => setModal(false)} */}
+		<div
+			className={[cl.modalBackground, "closeOnClick"].join(" ")}
+			onMouseDown={(event) => {
+				if (event.target.classList.contains("closeOnClick")) setModal(false);
+			}}
+		>
 			<form onSubmit={handleSubmit}>
 				<input
 					type="text"
@@ -69,7 +72,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ setModal, parentId }) => {
 					onChange={(e) => setContent(e.target.value)}
 					placeholder="Write a comment"
 				/>
-				<div>
+				<div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
 					<img src={API_URL + "/captcha"} alt="Captcha" />
 					<input
 						type="text"
