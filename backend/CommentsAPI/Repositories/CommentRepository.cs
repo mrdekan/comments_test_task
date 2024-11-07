@@ -42,6 +42,11 @@ namespace CommentsAPI.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<CommentEntity>> GetTopLayerComments(int count, int offset)
+        {
+            return await _context.Comments.Where(el => el.ParentId == null).ToListAsync();
+        }
+
         //public async Task<int> CountChildren(CommentEntity comment)
         //{
 

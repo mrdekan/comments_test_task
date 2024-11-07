@@ -8,8 +8,4 @@ import store from "./Store/store.ts";
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement
 );
-root.render(
-	<React.StrictMode>
-		<Provider store={store} children={<App />}></Provider>
-	</React.StrictMode>
-);
+root.render(<Provider store={store} children={<App />}></Provider>);
