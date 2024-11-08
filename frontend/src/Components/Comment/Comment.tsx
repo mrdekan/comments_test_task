@@ -1,9 +1,8 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, Dispatch, SetStateAction, useState } from "react";
 import CommentsList from "./CommentsList/CommentsList.tsx";
 import cl from "./Comment.module.css";
 interface CommentProps {
 	comment: Comment;
-	comments: { [key: string]: Comment[] };
 	handleResponse: (id: number) => void;
 	setOpenCommentStatus: (
 		id: number,
@@ -11,13 +10,14 @@ interface CommentProps {
 		count: number
 	) => Promise<void>;
 	getCommentsByParentId: (parentId: number | null) => Comment[];
+	setFileToView: Dispatch<SetStateAction<string | null>>;
 }
 const Comment: FC<CommentProps> = ({
 	comment,
 	handleResponse,
 	setOpenCommentStatus,
 	getCommentsByParentId,
-	comments,
+	setFileToView,
 }) => {
 	const PHOTO_URL = process.env.REACT_APP_PHOTO_URL;
 	const [open, setOpen] = useState<boolean>(false);
@@ -64,12 +64,23 @@ const Comment: FC<CommentProps> = ({
 						<p style={{ marginTop: "10px" }}>{comment.author.email}</p>
 					</div>
 					{comment.fileURL && (
-						<div>
-							<img
-								src={PHOTO_URL + comment.fileURL}
-								style={{ maxWidth: "100px", maxHeight: "100px" }}
-								alt={comment.fileURL}
-							/>
+						<div
+							style={{ cursor: "pointer" }}
+							onClick={() => setFileToView(comment.fileURL)}
+						>
+							{!comment.fileURL.endsWith(".txt") ? (
+								<img
+									src={PHOTO_URL + comment.fileURL}
+									style={{ maxWidth: "100px", maxHeight: "100px" }}
+									alt={comment.fileURL}
+								/>
+							) : (
+								<img
+									src={process.env.PUBLIC_URL + "/file.png"}
+									style={{ maxWidth: "100px", maxHeight: "100px" }}
+									alt={comment.fileURL}
+								/>
+							)}
 						</div>
 					)}
 				</div>
@@ -88,11 +99,11 @@ const Comment: FC<CommentProps> = ({
 			</div>
 			{open && comment.childrenCount > 0 && (
 				<CommentsList
-					comments={comments}
 					setOpenCommentStatus={setOpenCommentStatus}
 					handleResponse={handleResponse}
 					id={comment.id}
 					getCommentsByParentId={getCommentsByParentId}
+					setFileToView={setFileToView}
 				/>
 			)}
 		</div>

@@ -6,7 +6,7 @@ namespace CommentsAPI.Interfaces
     {
         Task<CommentEntity?> GetByIdAsync(int id);
         Task<IEnumerable<CommentEntity>> GetAllAsync();
-        Task<IEnumerable<CommentEntity>> GetTopLayerComments(int count, int offset);
+        Task<(IEnumerable<CommentEntity> Comments, int TotalPages)> GetTopLayerComments(int count, int offset);
         Task AddAsync(CommentEntity comment);
         Task UpdateAsync(CommentEntity comment);
         Task DeleteAsync(CommentEntity comment);

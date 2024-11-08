@@ -14,3 +14,7 @@ export interface Comment {
 export interface GetCommentsResponse{
     comments: Comment[];
 }
+export interface GetTopLayerCommentsResponse extends GetCommentsResponse{
+  totalPages: number;
+  commentsPerPage: number;
+}

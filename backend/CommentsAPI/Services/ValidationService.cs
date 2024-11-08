@@ -1,5 +1,5 @@
 ﻿using CommentsAPI.Interfaces;
-using HtmlAgilityPack;
+using System.Xml;
 
 namespace CommentsAPI.Services
 {
@@ -8,20 +8,30 @@ namespace CommentsAPI.Services
         private readonly string[] _allowedTags = new[] { "a", "code", "i", "strong" };
         public bool IsValidHtml(string input)
         {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(input);
+            string xhtmlWrapper = $"<div xmlns=\"http://www.w3.org/1999/xhtml\">{input}</div>";
 
-            var nodes = doc.DocumentNode.Descendants().Where(n => n.NodeType == HtmlNodeType.Element);
-
-            foreach (var node in nodes)
+            try
             {
-                if (!_allowedTags.Contains(node.Name))
-                {
-                    return false;
-                }
-            }
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xhtmlWrapper);
 
-            return true;
+                var allowedTags = new[] { "a", "code", "i", "strong", "div" }; // div - для обёртки
+                var nodes = doc.GetElementsByTagName("*");
+
+                foreach (XmlNode node in nodes)
+                {
+                    if (!allowedTags.Contains(node.Name))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (XmlException)
+            {
+                return false;
+            }
         }
     }
 }

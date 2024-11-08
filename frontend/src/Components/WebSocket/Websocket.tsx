@@ -6,15 +6,19 @@ import {
 	useLazyGetChildrenQuery,
 } from "../../API/comments.ts";
 import { Comment } from "../../Types/comments.ts";
+import FileViewer from "../FileViewer/FileViewer.tsx";
 const Websocket: React.FC = () => {
+	const [page, setPage] = useState<number>(1);
+	const [totalPages, setTotalPages] = useState<number>(0);
 	const [modal, setModal] = useState<boolean>(false);
+	const [fileToView, setFileToView] = useState<string | null>(null);
 	const [openComments, setOpenComments] = useState<number[]>([]);
 	const [responseId, setResponseId] = useState<number | null>(null);
 	const [message, setMessage] = useState<string>("");
 	const [messages, setMessages] = useState<string[]>([]);
 	const [socket, setSocket] = useState<WebSocket | null>(null);
 	const [comments, setComments] = useState<{ [key: string]: Comment[] }>({});
-	const { data: topLayerComments, refetch } = useGetTopLayerCommentsQuery();
+	const { data: topLayerComments, refetch } = useGetTopLayerCommentsQuery(page);
 	const [getChildrenAsync] = useLazyGetChildrenQuery();
 	function addComments(commentsArr: Comment[], newComment: boolean) {
 		setComments((prevState) => {
@@ -98,6 +102,7 @@ const Websocket: React.FC = () => {
 		console.log(topLayerComments);
 		if (topLayerComments && topLayerComments.comments) {
 			addComments(topLayerComments.comments, false);
+			setTotalPages(topLayerComments.totalPages);
 		}
 	}, [topLayerComments]);
 	useEffect(() => {
@@ -151,15 +156,53 @@ const Websocket: React.FC = () => {
 	};
 	return (
 		<div style={{ width: "75vw", minWidth: "700px", margin: "auto" }}>
-			<button onClick={() => setModal(true)}>Write a comment</button>
+			<button
+				onClick={() => {
+					setResponseId(null);
+					setModal(true);
+				}}
+				style={{ marginBottom: "20px", padding: "10px", borderRadius: "8px" }}
+			>
+				Write a comment
+			</button>
+			<div
+				style={{
+					marginBottom: "20px",
+					display: "flex",
+					gap: "5px",
+					justifyContent: "center",
+				}}
+			>
+				{Array.from({ length: totalPages }, (_, i) => (
+					<button
+						key={i + 1}
+						onClick={() => {
+							setComments({});
+							setPage(i + 1);
+						}}
+						style={{
+							padding: "10px",
+							borderRadius: "8px",
+							background: i + 1 === page ? "gray" : "white",
+							color: i + 1 === page ? "white" : "black",
+							width: "39px",
+						}}
+					>
+						{i + 1}
+					</button>
+				))}
+			</div>
 			<CommentsList
 				handleResponse={responseHandler}
 				setOpenCommentStatus={setOpenCommentStatus}
 				id={null}
-				comments={comments}
 				getCommentsByParentId={getCommentsByParentId}
+				setFileToView={setFileToView}
 			/>
 			{modal && <CommentForm parentId={responseId} setModal={setModal} />}
+			{fileToView && (
+				<FileViewer setOpen={setFileToView} fileUrl={fileToView} />
+			)}
 		</div>
 	);
 };

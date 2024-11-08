@@ -17,6 +17,7 @@ namespace CommentsAPI.Controllers
         private readonly IFileService _fileService;
         private readonly IWebSocketService _webSocketService;
         private readonly IValidationService _validationService;
+        private const int COMMENTS_PER_PAGE = 5;
         public CommentsController(ICommentRepository commentRepository, IFileService fileService, IWebSocketService webSocketService, IValidationService validationService)
         {
             _commentRepository = commentRepository;
@@ -57,10 +58,11 @@ namespace CommentsAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTopLayerComments()
+        public async Task<IActionResult> GetTopLayerComments(int page)
         {
-            var comments = await _commentRepository.GetTopLayerComments(25, 0);
-            return Ok(new { Comments = comments.Select(el => new CommentResponse(el)) });
+            var response = await _commentRepository.GetTopLayerComments(COMMENTS_PER_PAGE, page);
+
+            return Ok(new { Comments = response.Comments.Select(el => new CommentResponse(el)), TotalPages = response.TotalPages, CommentsPerPage = COMMENTS_PER_PAGE });
         }
 
         [HttpGet("children/{id}")]
@@ -76,11 +78,11 @@ namespace CommentsAPI.Controllers
             var captchaText = HttpContext.Session.GetString("captchaText");
             if (captchaText == null || !captchaText.Equals(request.CaptchaText, StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest("Invalid captcha");
+                return BadRequest(new { Errors = new { Captcha = "Invalid captcha" } });
             }
             if (!_validationService.IsValidHtml(request.Content))
             {
-                return BadRequest("Invalid content (only <a><strong><i><code> are allowed)");
+                return BadRequest(new { Errors = new { Content = "The line contains errors or invalid tags (only <a><strong><i><code> are allowed)" } });
             }
 
             string? fileName = null;

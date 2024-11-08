@@ -28,6 +28,7 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 builder.Services.AddSingleton<IValidationService, ValidationService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

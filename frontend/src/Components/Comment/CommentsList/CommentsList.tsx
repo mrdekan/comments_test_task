@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 import Comment from "../Comment.tsx";
 interface CommentsListProps {
-	comments: { [key: string]: Comment[] };
 	handleResponse: (id: number) => void;
 	setOpenCommentStatus: (
 		id: number,
@@ -11,15 +10,15 @@ interface CommentsListProps {
 	) => Promise<void>;
 	id: number | null;
 	getCommentsByParentId: (parentId: number | null) => Comment[];
+	setFileToView: Dispatch<SetStateAction<string | null>>;
 }
 const CommentsList: React.FC<CommentsListProps> = ({
-	comments,
 	handleResponse,
 	setOpenCommentStatus,
 	id,
 	getCommentsByParentId,
+	setFileToView,
 }) => {
-	console.log(comments, id, getCommentsByParentId(id));
 	return (
 		<div
 			style={{ display: "flex", flexDirection: "column", alignItems: "end" }}
@@ -31,6 +30,7 @@ const CommentsList: React.FC<CommentsListProps> = ({
 					handleResponse={handleResponse}
 					setOpenCommentStatus={setOpenCommentStatus}
 					getCommentsByParentId={getCommentsByParentId}
+					setFileToView={setFileToView}
 				/>
 			))}
 		</div>
