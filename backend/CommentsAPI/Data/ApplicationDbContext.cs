@@ -52,7 +52,18 @@ namespace CommentsAPI.Data
                 new CommentEntity { Id = 11127, Content = "Is it possible to use this with a different framework?", CreatedAt = DateTime.Now.AddMinutes(-34), Username = "user27", Email = "user27@example.com", ParentId = null, FileURL = "test.gif" },
                 new CommentEntity { Id = 11128, Content = "Thanks for the clarification.", CreatedAt = DateTime.Now.AddMinutes(-36), Username = "user28", Email = "user28@example.com", ParentId = 11125, FileURL = "hello.txt" },
                 new CommentEntity { Id = 11129, Content = "<code>const y = 20;</code> Another code example.", CreatedAt = DateTime.Now.AddMinutes(-38), Username = "user29", Email = "user29@example.com", ParentId = null, FileURL = "tiger.jpg" },
-                new CommentEntity { Id = 11130, Content = "This is great! I'm going to try it.", CreatedAt = DateTime.Now.AddMinutes(-40), Username = "user30", Email = "user30@example.com", ParentId = 11126, FileURL = "code.txt" }
+                new CommentEntity { Id = 11130, Content = "This is great! I'm going to try it.", CreatedAt = DateTime.Now.AddMinutes(-40), Username = "user30", Email = "user30@example.com", ParentId = 11126, FileURL = "code.txt" },
+                new CommentEntity { Id = 11131, Content = "I think there's an error in this example.", CreatedAt = DateTime.Now.AddMinutes(-14), Username = "user31", Email = "user31@example.com", ParentId = null, FileURL = null },
+                new CommentEntity { Id = 11132, Content = "This is great! I'm going to try it.", CreatedAt = DateTime.Now.AddMinutes(-23), Username = "user32", Email = "user32@example.com", ParentId = null, FileURL = "code.txt" },
+                new CommentEntity { Id = 11133, Content = "Could you explain how to use this in <strong>production</strong>?", CreatedAt = DateTime.Now.AddMinutes(-59), Username = "user33", Email = "user33@example.com", ParentId = null, FileURL = null },
+                new CommentEntity { Id = 11134, Content = "Can you explain the error you're facing?", CreatedAt = DateTime.Now.AddMinutes(-13), Username = "user34", Email = "user34@example.com", ParentId = null, FileURL = null },
+                new CommentEntity { Id = 11135, Content = "I'm stuck. Can someone help me with this part?", CreatedAt = DateTime.Now.AddMinutes(-4), Username = "user35", Email = "user35@example.com", ParentId = null, FileURL = "code.txt" },
+                new CommentEntity { Id = 11136, Content = "Could you explain how to use this in production?", CreatedAt = DateTime.Now.AddMinutes(-12), Username = "user36", Email = "user36@example.com", ParentId = null, FileURL = null },
+                new CommentEntity { Id = 11137, Content = "This is great! I'm going to try it.", CreatedAt = DateTime.Now.AddMinutes(-4), Username = "user37", Email = "user37@example.com", ParentId = null, FileURL = "gt86.png" },
+                new CommentEntity { Id = 11138, Content = "I think there's an error in this example.", CreatedAt = DateTime.Now.AddMinutes(-8), Username = "user38", Email = "user38@example.com", ParentId = null, FileURL = "code.txt" },
+                new CommentEntity { Id = 11139, Content = "This is a helpful post. I learned a lot.", CreatedAt = DateTime.Now.AddMinutes(-140), Username = "user39", Email = "user39@example.com", ParentId = null, FileURL = "hello.txt" },
+                new CommentEntity { Id = 11140, Content = "This is great! I'm going to try it.", CreatedAt = DateTime.Now.AddMinutes(-45), Username = "user40", Email = "user40@example.com", ParentId = null, FileURL = "tiger.jpg" },
+                new CommentEntity { Id = 11141, Content = "<strong>Very informative!</strong> <i>I will be using this soon.</i>", CreatedAt = DateTime.Now.AddMinutes(-1), Username = "user41", Email = "user41@example.com", ParentId = null, FileURL = null }
             );
         }
     }

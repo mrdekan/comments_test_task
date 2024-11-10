@@ -17,7 +17,7 @@ namespace CommentsAPI.Controllers
         private readonly IFileService _fileService;
         private readonly IWebSocketService _webSocketService;
         private readonly IValidationService _validationService;
-        private const int COMMENTS_PER_PAGE = 5;
+        private const int COMMENTS_PER_PAGE = 25;
         public CommentsController(ICommentRepository commentRepository, IFileService fileService, IWebSocketService webSocketService, IValidationService validationService)
         {
             _commentRepository = commentRepository;
