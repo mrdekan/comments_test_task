@@ -73,17 +73,30 @@ namespace CommentsAPI.Repositories
             _cache.Remove(cacheKey);
         }
 
-        public async Task<(IEnumerable<CommentEntity> Comments, int TotalPages)> GetTopLayerComments(int count, int offset)
+        public async Task<(IEnumerable<CommentEntity> Comments, int TotalPages)> GetTopLayerComments(int count, int offset, string? sort)
         {
             int totalComments = await _context.Comments
         .Where(el => el.ParentId == null)
         .CountAsync();
-            var comments = await _context.Comments
-                .Where(el => el.ParentId == null)
-                .OrderByDescending(c => c.CreatedAt)
-                .Include(c => c.Comments)
+
+            var query = _context.Comments
+                .Where(el => el.ParentId == null);
+
+            query = sort switch
+            {
+                "usernameAsc" => query.OrderBy(c => c.Username).ThenByDescending(c => c.CreatedAt),
+                "usernameDesc" => query.OrderByDescending(c => c.Username).ThenByDescending(c => c.CreatedAt),
+                "emailAsc" => query.OrderBy(c => c.Email).ThenByDescending(c => c.CreatedAt),
+                "emailDesc" => query.OrderByDescending(c => c.Email).ThenByDescending(c => c.CreatedAt),
+                "dateAsc" => query.OrderBy(c => c.CreatedAt),
+                "dateDesc" => query.OrderByDescending(c => c.CreatedAt),
+                _ => query.OrderByDescending(c => c.CreatedAt)
+            };
+
+            var comments = await query
                 .Skip((offset - 1) * count)
                 .Take(count)
+                .Include(c => c.Comments)
                 .ToListAsync();
 
             int totalPages = (int)Math.Ceiling((double)totalComments / count);

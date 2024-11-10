@@ -30,10 +30,15 @@ namespace CommentsAPI.Models.Entities
 
         public DateTime CreatedAt { get; set; }
 
+        [Required]
+        [StringLength(50)]
         public string Username { get; set; }
 
+        [Required]
+        [StringLength(50)]
         public string Email { get; set; }
 
+        [StringLength(50)]
         public string? Homepage { get; set; }
 
         public string? FileURL { get; set; }

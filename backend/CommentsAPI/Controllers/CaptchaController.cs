@@ -1,26 +1,33 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CommentsAPI.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp.Formats.Png;
+
 
 namespace CommentsAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/captcha")]
     [ApiController]
     public class CaptchaController : ControllerBase
     {
+        private readonly ICaptchaService _captchaService;
+        public CaptchaController(ICaptchaService captchaService)
+        {
+            _captchaService = captchaService;
+        }
+
         [HttpGet]
         public IActionResult GetCaptcha()
         {
-            string captchaText = GenerateRandomText();
-            using var image = CaptchaGen.ImageFactory.GenerateImage(captchaText);
-            HttpContext.Session.SetString("captchaText", captchaText);
-            return File(image.ToArray(), "image/png");
-        }
+            string captchaText = _captchaService.GenerateRandomText();
+            var image = _captchaService.GenerateImage(captchaText);
 
-        private string GenerateRandomText()
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, 5)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
+            HttpContext.Session.SetString("captchaText", captchaText);
+
+            using (var memoryStream = new MemoryStream())
+            {
+                image.Save(memoryStream, new PngEncoder());
+                return File(memoryStream.ToArray(), "image/png");
+            }
         }
     }
 }

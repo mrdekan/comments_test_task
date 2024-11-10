@@ -10,7 +10,7 @@
     justify-content: center;
     align-items: center;
 }
-.modalBackground form{
+.modalBackground form, .modalBackground .commentView{
     background: white;
     max-width: 60%;
     padding: 20px;
@@ -19,13 +19,20 @@
     flex-direction: column;
     gap: 6px;
 }
+.commentView{
+    max-width: 75vw;
+    min-width: 500px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
 .modalBackground form input, textarea{
     font-size: 16px;
     border-radius: 8px;
     border: 1px solid lightgray;
     padding: 6px;
 }
-.modalBackground form button{
+.modalBackground form button, .commentView button{
     padding: 8px;
     border-radius: 8px;
     font-size: 18px;

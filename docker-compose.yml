@@ -1,0 +1,54 @@
+version: '3.4'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - backend_network
+
+  backend:
+    build:
+      context: ./backend/CommentsAPI
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:5000
+      - ConnectionStrings__DefaultConnection=Data Source=db;Initial Catalog=comments;User ID=sa;Password=YourStrong_Passw0rd;Encrypt=False;TrustServerCertificate=True;MultiSubnetFailover=True;
+    depends_on:
+      - db
+    networks:
+      - backend_network
+    restart: unless-stopped
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - SQL_SERVER_AUTH=Mixed
+      - SA_PASSWORD=YourStrong_Passw0rd
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+    networks:
+      - backend_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-U", "sa", "-P", "YourStrongPassw0rd", "-Q", "SELECT 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+volumes:
+  sqlserverdata:
+    driver: local
+
+networks:
+  backend_network:
+    driver: bridge

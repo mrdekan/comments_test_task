@@ -18,3 +18,8 @@ export interface GetTopLayerCommentsResponse extends GetCommentsResponse{
   totalPages: number;
   commentsPerPage: number;
 }
+
+export interface GetTopLevelCommentsRequest{
+  page: number;
+  sorting: string;
+}

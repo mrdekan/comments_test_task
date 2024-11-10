@@ -1,4 +1,0 @@
-Hello world!
-
-<strong>strong text</strong>
-<div>block</div>

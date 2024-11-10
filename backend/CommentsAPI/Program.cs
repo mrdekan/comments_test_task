@@ -3,9 +3,11 @@ using CommentsAPI.Interfaces;
 using CommentsAPI.Repositories;
 using CommentsAPI.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
-
+ServicePointManager.ServerCertificateValidationCallback =
+    (sender, certificate, chain, sslPolicyErrors) => true;
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -26,6 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<ICaptchaService, CaptchaService>();
 builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 builder.Services.AddSingleton<IValidationService, ValidationService>();
 builder.Services.AddMemoryCache();
@@ -43,9 +46,14 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseSession();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -57,7 +65,6 @@ app.UseWebSockets();
 app.UseCors("AllowReactApp");
 
 app.UseStaticFiles();
-//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

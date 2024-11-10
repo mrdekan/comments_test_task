@@ -58,9 +58,9 @@ namespace CommentsAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTopLayerComments(int page)
+        public async Task<IActionResult> GetTopLayerComments(int page, string? sort)
         {
-            var response = await _commentRepository.GetTopLayerComments(COMMENTS_PER_PAGE, page);
+            var response = await _commentRepository.GetTopLayerComments(COMMENTS_PER_PAGE, page, sort);
 
             return Ok(new { Comments = response.Comments.Select(el => new CommentResponse(el)), TotalPages = response.TotalPages, CommentsPerPage = COMMENTS_PER_PAGE });
         }
@@ -76,14 +76,29 @@ namespace CommentsAPI.Controllers
         public async Task<IActionResult> PostComment([FromForm] CommentRequest request)
         {
             var captchaText = HttpContext.Session.GetString("captchaText");
+            var errors = new Dictionary<string, string>();
+
             if (captchaText == null || !captchaText.Equals(request.CaptchaText, StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest(new { Errors = new { Captcha = "Invalid captcha" } });
-            }
+                errors["Captcha"] = "Invalid captcha";
+
+            if (!_validationService.IsValidEmail(request.Email))
+                errors["Email"] = "Invalid email";
+
+            if (request.Homepage != null && !_validationService.IsValidURL(request.Homepage))
+                errors["Homepage"] = "Invalid homepage URL";
+
             if (!_validationService.IsValidHtml(request.Content))
-            {
-                return BadRequest(new { Errors = new { Content = "The line contains errors or invalid tags (only <a><strong><i><code> are allowed)" } });
-            }
+                errors["Content"] = "The line contains errors or invalid tags (only <a><strong><i><code> are allowed with no optional attributes)";
+
+            if (request.File != null && !_validationService.IsValidFileExtension(request.File))
+                errors["FileExtension"] = $"Unsupported file extension (only .png, .jpg, .gif & .txt are supported)";
+
+            if (request.File != null && request.File.FileName.EndsWith(".txt") && !_validationService.IsValidTxtFile(request.File))
+                errors["File"] = $"The file {request.File.FileName} is too big (100KB max)";
+
+
+            if (errors.Any())
+                return BadRequest(new { Errors = errors });
 
             string? fileName = null;
             if (request.File != null)

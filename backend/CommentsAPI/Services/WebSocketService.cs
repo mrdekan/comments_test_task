@@ -4,12 +4,15 @@ using System.Net.WebSockets;
 using System.Text;
 namespace CommentsAPI.Services
 {
-
     public class WebSocketService : IWebSocketService
     {
         private readonly ConcurrentBag<WebSocket> _clients = new();
         private readonly ConcurrentQueue<string> _messageQueue = new();
         private readonly CancellationTokenSource _cancellationTokenSource = new();
+
+        public event EventHandler<WebSocket> ClientAdded;
+        public event EventHandler<string> MessageSent;
+        public event EventHandler<WebSocket> ClientRemoved;
 
         public WebSocketService()
         {
@@ -19,6 +22,7 @@ namespace CommentsAPI.Services
         public void AddClient(WebSocket socket)
         {
             _clients.Add(socket);
+            ClientAdded?.Invoke(this, socket);
         }
 
         public void QueueMessage(string message)
@@ -41,6 +45,7 @@ namespace CommentsAPI.Services
                             try
                             {
                                 await client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+                                MessageSent?.Invoke(this, message);
                             }
                             catch (WebSocketException)
                             {
@@ -63,6 +68,7 @@ namespace CommentsAPI.Services
                     await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed", CancellationToken.None);
                 }
                 socket.Dispose();
+                ClientRemoved?.Invoke(this, socket);
             }
         }
 
@@ -71,5 +77,4 @@ namespace CommentsAPI.Services
             _cancellationTokenSource.Cancel();
         }
     }
-
 }

@@ -3,14 +3,14 @@ import CommentsList from "./CommentsList/CommentsList.tsx";
 import cl from "./Comment.module.css";
 interface CommentProps {
 	comment: Comment;
-	handleResponse: (id: number) => void;
-	setOpenCommentStatus: (
+	handleResponse?: (id: number) => void;
+	setOpenCommentStatus?: (
 		id: number,
 		status: boolean,
 		count: number
 	) => Promise<void>;
-	getCommentsByParentId: (parentId: number | null) => Comment[];
-	setFileToView: Dispatch<SetStateAction<string | null>>;
+	getCommentsByParentId?: (parentId: number | null) => Comment[];
+	setFileToView?: Dispatch<SetStateAction<string | null>>;
 }
 const Comment: FC<CommentProps> = ({
 	comment,
@@ -36,7 +36,6 @@ const Comment: FC<CommentProps> = ({
 		setOpenCommentStatus(comment.id, !open, comment.childrenCount);
 		setOpen(!open);
 	}
-	console.log(comment.fileURL);
 	return (
 		<div className={cl.comment}>
 			<div className={cl.commentHeader}>
@@ -61,7 +60,16 @@ const Comment: FC<CommentProps> = ({
 							style={{ fontSize: "16px" }}
 							dangerouslySetInnerHTML={{ __html: comment.content }}
 						/>
-						<p style={{ marginTop: "10px" }}>{comment.author.email}</p>
+						<p style={{ marginTop: "10px" }}>
+							{comment.author.email}{" "}
+							{comment.author.homepage && (
+								<p>
+									<a href={comment.author.homepage}>
+										{comment.author.homepage}
+									</a>
+								</p>
+							)}
+						</p>
 					</div>
 					{comment.fileURL && (
 						<div
@@ -94,7 +102,13 @@ const Comment: FC<CommentProps> = ({
 					) : (
 						<div></div>
 					)}
-					<button onClick={() => handleResponse(comment.id)}>Reply</button>
+					<button
+						onClick={() => {
+							if (handleResponse) handleResponse(comment.id);
+						}}
+					>
+						Reply
+					</button>
 				</div>
 			</div>
 			{open && comment.childrenCount > 0 && (

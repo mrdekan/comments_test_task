@@ -28,33 +28,48 @@ namespace CommentsAPI.Services
             }
             if (new string[] { "jpg", "png", "gif" }.Contains(Path.GetExtension(file.FileName).ToLower().Replace(".", "")))
             {
-                ProcessImage(240, 320, fileName);
+                ProcessImage(320, 240, fileName);
             }
             return fileName;
         }
         public void ProcessImage(int maxWidth, int maxHeight, string filename)
         {
             filename = Path.Combine(_baseDirectory, filename);
-            MagickImage img = new(filename);
 
-            if (img.Width > maxWidth || img.Height > maxHeight)
+            using (var imageColl = new MagickImageCollection(filename))
             {
-                decimal ratio = img.Width / img.Height;
-                decimal newRatio = maxWidth / maxHeight;
-                if (ratio > 1 && newRatio < 1 || ratio < 1 && newRatio > 1)
-                    (maxWidth, maxHeight) = (maxHeight, maxWidth);
-                decimal widthRatio = (decimal)maxWidth / img.Width;
-                decimal heightRatio = (decimal)maxHeight / img.Height;
+                int widthOrig = (int)imageColl[0].Width;
+                int heightOrig = (int)imageColl[0].Height;
 
-                decimal scaleRatio = Math.Min(widthRatio, heightRatio);
+                imageColl.Coalesce();
+                imageColl.Optimize();
+                imageColl.OptimizeTransparency();
 
-                int newWidth = (int)Math.Round(img.Width * scaleRatio);
-                int newHeight = (int)Math.Round(img.Height * scaleRatio);
+                foreach (MagickImage image in imageColl)
+                {
+                    var (width, height) = GetNewSize(widthOrig, heightOrig, maxWidth, maxHeight);
+                    image.Resize((uint)width, (uint)height);
+                }
 
-                img.Resize((uint)newWidth, (uint)newHeight);
+                imageColl.Write(filename);
             }
+        }
 
-            img.Write(filename);
+        private (int width, int height) GetNewSize(int originalWidth, int originalHeight, int maxWidth, int maxHeight)
+        {
+            decimal ratio = originalWidth / (decimal)originalHeight;
+            decimal newRatio = maxWidth / (decimal)maxHeight;
+            if (ratio > 1 && newRatio < 1 || ratio < 1 && newRatio > 1)
+                (maxWidth, maxHeight) = (maxHeight, maxWidth);
+            decimal widthRatio = (decimal)maxWidth / originalWidth;
+            decimal heightRatio = (decimal)maxHeight / originalHeight;
+
+            decimal scaleRatio = Math.Min(widthRatio, heightRatio);
+
+            int newWidth = (int)Math.Round(originalWidth * scaleRatio);
+            int newHeight = (int)Math.Round(originalHeight * scaleRatio);
+
+            return (newWidth, newHeight);
         }
 
     }

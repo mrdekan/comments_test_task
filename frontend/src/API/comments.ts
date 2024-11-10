@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { GetCommentsResponse, GetTopLayerCommentsResponse } from '../Types/comments.ts';
+import { GetCommentsResponse, GetTopLayerCommentsResponse, GetTopLevelCommentsRequest } from '../Types/comments.ts';
 const API_URL = process.env.REACT_APP_API_URL;
 export const commentsApi = createApi({
   reducerPath: 'commentsApi',
@@ -15,9 +15,9 @@ export const commentsApi = createApi({
         body: formData,
       }),
     }),
-   getTopLayerComments: builder.query<GetTopLayerCommentsResponse,number>({
-      query: (page) => ({
-        url: '/comments?page='+page,
+   getTopLayerComments: builder.query<GetTopLayerCommentsResponse,GetTopLevelCommentsRequest>({
+      query: (data) => ({
+        url: '/comments?page='+data.page+'&sort='+data.sorting,
         method: 'GET',
       }),
     }),
